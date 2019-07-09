@@ -17,14 +17,20 @@ help: ## This help.
 .DEFAULT_GOAL := help
 
 # DOCKER TASKS
+pull: ##  Pull the image
+	docker pull $(TAG_NAME)
+
 build: ##  Build the container
-	docker build -t $(APP_NAME) --target $(VERSION) --force-rm $(path)
+	docker build -t $(APP_NAME) --target $(VERSION) $(path)
 
 build-nc: ## Build the container without caching
-	docker build --no-cache -t $(APP_NAME) --target $(VERSION) --force-rm $(path)
+	docker build --no-cache -t $(APP_NAME) --target $(VERSION) $(path)
 
-run: ## Run container
-	docker run -i -t --rm $(RUN_OPTIONS) --name="$(APP_NAME)" $(APP_NAME)
+run: tag ## Run container
+	docker run -i -t --rm $(RUN_OPTIONS) --name="$(APP_NAME)" $(TAG_NAME)
+
+shell: tag ## Run container as shell
+	docker run -i -t --rm $(RUN_OPTIONS) --name="$(APP_NAME)" $(TAG_NAME) sh
 
 up: build run ## Build and run the container
 
