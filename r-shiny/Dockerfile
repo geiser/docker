@@ -21,9 +21,9 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
     && rm -rf /var/lib/apt/lists/*
 
 # download and install shiny server
-RUN install2.r shiny \
-    && install2.r rmarkdown \
-    && install2.r shinythemes
+RUN install2.r -s shiny \
+    && install2.r -s rmarkdown \
+    && install2.r -s shinythemes
 
 RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION -O "version.txt" \
     && VERSION=$(cat version.txt) \

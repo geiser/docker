@@ -30,7 +30,7 @@ run: tag ## Run container
 	docker run -i -t --rm $(RUN_OPTIONS) --name="$(APP_NAME)" $(TAG_NAME)
 
 shell: tag ## Run container as shell
-	docker run -i -t --rm $(RUN_OPTIONS) --name="$(APP_NAME)" $(TAG_NAME) sh
+	docker run --name="$(APP_NAME)" --rm -it --entrypoint /bin/bash $(TAG_NAME)
 
 up: build run ## Build and run the container
 

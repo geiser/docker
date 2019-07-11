@@ -52,35 +52,24 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds \
     && rm -rf /var/lib/apt/lists/*
 
+# Install java and rJava
+RUN apt-get update -qq && apt-get -y --no-install-recommends install \
+    default-jdk \
+    && R CMD javareconf -e \
+    && install2.r rJava \
+    && apt-get clean && apt-get autoclean && apt-get autoremove \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install extra basic R packages
+RUN apt-get update -qq && apt-get -y --no-install-recommends install \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    && install2.r -s config \
+    && install2.r -s plotly \
+    && install2.r -s qdap \
+    && install2.r -s rjson \
+    && apt-get clean && apt-get autoclean && apt-get autoremove \
+    && rm -rf /var/lib/apt/lists/*
+
 CMD ["R"]
-
-#RUN get ca-certificates wget gnupg software-properties-common gcc \
-#    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
-#    && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
-#    && add-apt-repository ppa:marutter/c2d4u3.5 \
-#    && apt-get update -qq && apt-get -y --no-install-recommends install \
-#    libbz2-dev liblz1 liblz-dev liblzma-dev libblas-dev liblapack-dev \
-#    littler \
-#    default-jdk \
-#    r-base \
-#    r-cran-rjava \
-#    && R CMD javareconf -e \
-#    && Rscript -e "install.packages(c('littler', 'docopt'))" \
-#    && ln -s /usr/local/lib/R/site-library/littler/examples/install2.r /usr/local/bin/install2.r \
-#    && ln -s /usr/local/lib/R/site-library/littler/examples/installGithub.r /usr/local/bin/ \
-#    && apt-get clean && apt-get autoclean && apt-get autoremove \
-#    && rm -rf /var/lib/apt/lists/*
-
-#RUN apt-get update -qq && apt-get -y --no-install-recommends install \
-#    libcurl4-openssl-dev \
-#    libxml2-dev \
-#    libssl-dev \
-#    && apt-get clean && apt-get autoclean && apt-get autoremove \
-#    && rm -rf /var/lib/apt/lists/*
-
-# Install R packages
-#RUN install2.r rJava \
-#    && install2.r -s config \
-#    && install2.r -s plotly \
-#    && install2.r -s qdap \
-#    && install2.r -s rjson

@@ -1,24 +1,34 @@
 FROM geiser/r-prod:latest AS v0.09
+MAINTAINER Geiser Chalco <geiser@usp.br>
 
-#ARG RSTUDIO_VERSION
-#ENV RSTUDIO_VERSION=${RSTUDIO_VERSION:-1.2.1335}
-#ARG S6_VERSION
-#ARG PANDOC_TEMPLATES_VERSION
-#ENV S6_VERSION=${S6_VERSION:-v1.21.7.0}
-#ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
-#ENV PATH=/usr/lib/rstudio-server/bin:$PATH
-#ENV PANDOC_TEMPLATES_VERSION=${PANDOC_TEMPLATES_VERSION:-2.6}
+LABEL org.label-schema.license="GPL-3.0" \
+      org.label-schema.vcs-url="https://github.com/geiser/docker" \
+      org.label-schema.vendor="R-studio for my-projects" \
+      maintainer="Geiser Chalco <geiser@usp.br>"
 
+## Install R-server
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
-    cmake 
+    gdebi-core \
+    supervisor \
+    && wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.1335-amd64.deb \
+    && gdebi -n rstudio-server-1.2.1335-amd64.deb \
+    && rm rstudio-server-1.2.1335-amd64.deb \
+    && apt-get clean && apt-get autoclean && apt-get autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN wget -O rstudio.tar.gz https://github.com/rstudio/rstudio/tarball/v1.2.1335 \
-    && tar -zxvf rstudio.tar.gz \
-    && mkdir -p rstudio/build && cd rstudio/build \
-    && cmake .. -DRSTUDIO_TARGET=Server -DCMAKE_BUILD_TYPE=Release
+RUN useradd -m -s /bin/bash -N -u 1001 gcc \
+  && echo "gcc:qaz123456" | chpasswd \
+  && addgroup gcc staff \
+  && adduser gcc sudo \
+  && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+  && ln -s /usr/lib/rstudio-server/bin/pandoc/pandoc /usr/local/bin/pandoc
 
-#    gdebi-core \
-#    && wget https://github.com/rstudio/rstudio/tarball/v1.2.1335 \
-#    && gdebi rstudio-server-1.2.1335-amd64.deb \
-#    && apt-get clean && apt-get autoclean && apt-get autoremove \
-#    && rm -rf /var/lib/apt/lists/*
+# Download and install default shiny packages
+RUN install2.r -s shiny \
+    && install2.r -s rmarkdown \
+    && install2.r -s shinythemes
+
+# Making executable
+EXPOSE 8787 8080
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
