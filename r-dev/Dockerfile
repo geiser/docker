@@ -1,5 +1,4 @@
-
-FROM geiser/r-dev:v20210225 AS v20210324
+FROM rocker/verse:4.0.3 AS v0.01
 MAINTAINER Geiser Chalco <geiser@alumni.usp.br>
 
 LABEL org.label-schema.license="GPL-2.0" \
@@ -7,19 +6,16 @@ LABEL org.label-schema.license="GPL-2.0" \
       org.label-schema.vendor="Geiser Projects" \
       maintainer="Geiser Chalco <geiser@alumni@usp.br>"
 
-RUN apt-get update -qq
- 
-RUN R -e "source('https://vipbg.vcu.edu/vipbg/OpenMx2/software/getOpenMx.R')"
-
-RUN rm -rf /var/lib/apt/lists/*
+ENV DISABLE_AUTH=true
+RUN export DISABLE_AUTH=true
 
 
-FROM geiser/r-dev:v20210201 AS v20210225
+FROM geiser/r-dev:v0.01 AS v0.02
 MAINTAINER Geiser Chalco <geiser@alumni.usp.br>
 
-RUN apt-get update -qq && apt-get -y --no-install-recommends install \
-    libgsl-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq
+RUN apt-get -y --no-install-recommends install \
+    libgsl-dev
 
 RUN install2.r -s lavaan \
     && install2.r -s MVN \
@@ -30,17 +26,26 @@ RUN install2.r -s lavaan \
     && install2.r -s parameters \
     && install2.r -s semPlot \
     && install2.r -s semTools
-
 CMD R -e "source('https://vipbg.vcu.edu/vipbg/OpenMx2/software/getOpenMx.R')"
 
-FROM rocker/verse:4.0.3 AS v20210201
+RUN rm -rf /var/lib/apt/lists/*
+
+
+FROM geiser/r-dev:v0.02 AS v0.03
 MAINTAINER Geiser Chalco <geiser@alumni.usp.br>
 
-LABEL org.label-schema.license="GPL-2.0" \
-      org.label-schema.vcs-url="https://github.com/geiser/docker/r-dev" \
-      org.label-schema.vendor="Geiser Projects" \
-      maintainer="Geiser Chalco <geiser@alumni@usp.br>"
+RUN apt-get update -qq 
+RUN apt-get -y --no-install-recommends install \
+    apt-utils
 
-ENV DISABLE_AUTH=true
-RUN export DISABLE_AUTH=true
+RUN install2.r -s shiny
+CMD R -e "if (packageVersion('shiny') < '1.5.0') devtools::install_version('shiny','1.5.0')"
+RUN install2.r -s shiny.i18n shinyjs shinyTree \
+    && install2.r -s DT digest careless templates tools zip utils rmarkdown \
+    && install2.r -s stats fBasics rcompanion emmeans rstatix car \
+    && install2.r -s ggplot2 ggpubr plotly 
+CMD R -e "remotes::install_github('geiser/rshinystatistics')"
+
+RUN rm -rf /var/lib/apt/lists/*
+
 
