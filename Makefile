@@ -66,3 +66,4 @@ tag-version: ## Generate container `latest` tag
 # HELPERS
 version: ## Output the current version
 	@echo $(VERSION)
+

@@ -16,7 +16,6 @@ MAINTAINER Geiser Chalco <geiser@alumni.usp.br>
 RUN apt-get update -qq
 RUN apt-get -y --no-install-recommends install \
     libgsl-dev
-
 RUN install2.r -s lavaan \
     && install2.r -s MVN \
     && install2.r -s psy \
@@ -26,8 +25,7 @@ RUN install2.r -s lavaan \
     && install2.r -s parameters \
     && install2.r -s semPlot \
     && install2.r -s semTools
-CMD R -e "source('https://vipbg.vcu.edu/vipbg/OpenMx2/software/getOpenMx.R')"
-
+RUN install2.r -s OpenMx
 RUN rm -rf /var/lib/apt/lists/*
 
 
@@ -37,15 +35,13 @@ MAINTAINER Geiser Chalco <geiser@alumni.usp.br>
 RUN apt-get update -qq 
 RUN apt-get -y --no-install-recommends install \
     apt-utils
-
 RUN install2.r -s shiny
-CMD R -e "if (packageVersion('shiny') < '1.5.0') devtools::install_version('shiny','1.5.0')"
+RUN R -e "if (packageVersion('shiny') < '1.5.0') devtools::install_version('shiny','1.5.0');"
 RUN install2.r -s shiny.i18n shinyjs shinyTree \
     && install2.r -s DT digest careless templates tools zip utils rmarkdown \
     && install2.r -s stats fBasics rcompanion emmeans rstatix car \
-    && install2.r -s ggplot2 ggpubr plotly 
-CMD R -e "remotes::install_github('geiser/rshinystatistics')"
-
+    && install2.r -s ggplot2 ggpubr plotly \
+    && install2.r -s remotes
+RUN R -e "remotes::install_github('geiser/rshinystatistics');"
 RUN rm -rf /var/lib/apt/lists/*
-
 
